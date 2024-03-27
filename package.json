@@ -1,0 +1,23 @@
+{
+  "name": "kehila",
+  "version": "1.0.0",
+  "description": "charity web app",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KehilaHub/Kehila.git"
+  },
+  "author": "Ori Hessel, David Tishbi",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/KehilaHub/Kehila/issues"
+  },
+  "homepage": "https://github.com/KehilaHub/Kehila#readme",
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}

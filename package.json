@@ -18,6 +18,9 @@
   },
   "homepage": "https://github.com/KehilaHub/Kehila#readme",
   "dependencies": {
-    "express": "^4.19.2"
+    "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2",
+    "md5": "^2.3.0",
+    "postgres": "^3.4.4"
   }
 }

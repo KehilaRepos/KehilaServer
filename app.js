@@ -1,5 +1,5 @@
 import express from 'express';
-import loginRouter from './routers/loginRouter.js';
+import authentication_router from './routers/authenticationRouter.js';
 
 const app = express();
 
@@ -9,6 +9,6 @@ const app = express();
 
 app.use(express.json());
 
-app.use('/login', loginRouter);
+app.use('/auth', authentication_router);
 
 export default app;

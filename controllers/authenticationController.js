@@ -67,9 +67,19 @@ export const login = async (req, res) => {
     //need to return some or all of these tokens to client side, need to decide how to store them
     res.status(200).json({ message: 'Sign in successful' });
   } catch (error) {
-    res.status(500).json({ message: 'Error signing in ', error });
+    if (error.name === 'NotAuthorizedException') {
+      res.status(401).json({ message: 'Invalid email or password' });
+      return;
+    }
+    if (error.name === 'UserNotConfirmedException') {
+      res.status(401).json({ message: 'User did not confirm email' });
+      return;
+    }
+    else {
+      res.status(500).json({ message: 'Error signing in ' });
+      return;
+    }
   }
 }
-
 
 

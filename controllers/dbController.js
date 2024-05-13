@@ -1,22 +1,23 @@
-import { Pool } from 'postgres';
+import { Pool } from 'pg';
 
 export default class dbController {
   static instance;
 
-  constructor(db_config) {
-    if (AuthenticationService.instance) {
-      return AuthenticationService.instance;
+  constructor(db_config_read, db_config_write) {
+    if (dbController.instance) {
+      return dbController.instance;
     }
 
-    this.pool = new Pool(dbConfig);
+    this.read_pool = new Pool(db_config_read);
+    this.write_pool = new Pool(db_config_write);
 
-    AuthenticationService.instance = this;
+    dbController.instance = this;
   }
 
   async does_email_exist(email) {
     try {
       const query = `SELECT * FROM users WHERE email = $1`;
-      const { row } = await this.pool.query(query, [email]);
+      const { row } = await this.read_pool.query(query, [email]);
       const user = row[0];
       if (!user) {
         throw new Error('User not found');
@@ -29,7 +30,7 @@ export default class dbController {
   async check_login(email, hashed_password) {
     try {
       const query = `SELECT * FROM users WHERE email = $1 AND password = $2`;
-      const { row } = await this.pool.query(query, [email, hashed_password]);
+      const { row } = await this.read_pool.query(query, [email, hashed_password]);
       const user = row[0];
       if (!user) {
         throw new Error('Invalid login credentials');
@@ -42,7 +43,7 @@ export default class dbController {
   async get_user_by_email(email) {
     try {
       const query = `SELECT * FROM users WHERE email = $1`;
-      const { row } = await this.pool.query(query, [email]);
+      const { row } = await this.read_pool.query(query, [email]);
       if (!row) {
         throw new Error('User not found');
       }

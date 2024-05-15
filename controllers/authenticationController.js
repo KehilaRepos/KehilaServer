@@ -44,6 +44,24 @@ export const verify_email = async (req, res) => {
   }
 }
 
+export const resend_email_verification = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!validator.isEmail(email)) {
+      return res.status(200).json({ success: false, message: 'Please provide a valid email address to proceed.' });
+    }
+    const params = {
+      ClientId: "j346v3emmgseoaju4cs99b94m",
+      Username: email,
+    }
+    const command = new ResendConfirmationCodeCommand(params);
+    const response = await client.send(command);
+    res.status(200).json({ success: true, message: 'Verification email resent successfully!' });
+  } catch (error) {
+    res.status(200).json({ success: false, message: 'Failed to resend verification email. Please check your details and try again.', error });
+  }
+}
+
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;

@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import { signUp, verify_email, login } from '../controllers/authenticationController.js';
+import { signUp, verify_email, login, resend_email_verification } from '../controllers/authenticationController.js';
 
 const loginRouter = express.Router();
 
@@ -14,6 +14,8 @@ loginRouter.route('/verifyEmail').post(verify_email);
 
 loginRouter.route('/login').post(login);
 
-//loginRouter.route('/verify-token').get(verifyToken);
+loginRouter.route('/resendEmailVerification').post(resend_email_verification);
 
+//loginRouter.route('/verify-token').get(verifyToken);
+// done? think so :D
 export default loginRouter;

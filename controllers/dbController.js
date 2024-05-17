@@ -1,15 +1,22 @@
-import { Pool } from 'pg';
+import pg from 'pg';
+const { Pool } = pg;
 
 export default class dbController {
   static instance;
 
-  constructor(db_config_read, db_config_write) {
+  constructor() {
     if (dbController.instance) {
       return dbController.instance;
     }
 
-    this.read_pool = new Pool(db_config_read);
-    this.write_pool = new Pool(db_config_write);
+    this.pool = new Pool({
+      user: process.env.POSTGRES_USER,
+      host: process.env.POSTGRES_HOST,
+      database: process.env.POSTGRES_DATABASE,
+      password: process.env.POSTGRES_PASS,
+      port: process.env.POSTGRES_PORT * 1,
+    
+    });
 
     dbController.instance = this;
   }

@@ -1,8 +1,9 @@
+import dotenv from 'dotenv/config';
 import app from './app.js';
-import { postgres_boot } from './utils.js';
-const port = 9285;
+import dbController from './controllers/dbController.js';
 
-app.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}`);
-  postgres_boot();
+const port = process.env.PORT * 1 || 8080;
+app.listen(port, () => { 
+  console.log(`Server running on http://localhost:${(port)}`);
+  const db = new dbController(); //create the db controller connection
 });

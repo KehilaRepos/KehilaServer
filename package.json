@@ -21,6 +21,7 @@
     "@aws-sdk/client-cognito-identity-provider": "^3.556.0",
     "cors": "^2.8.5",
     "express": "^4.19.2",
+    "pg": "^8.11.5",
     "validator": "^13.11.0"
   }
 }

@@ -29,18 +29,21 @@ export default class dbService {
       const { rows } = await this.pool.query(query, values);
       return rows;
     } catch (error) {
+      console.log(error);
       throw error;
     }
   }
-  async does_email_exist(email) {
+  async get_user_from_email(email) {
     try {
       const query = `SELECT * FROM users WHERE email = $1`;
-      const { row } = await this.read_pool.query(query, [email]);
+      const { row } = await this.pool.query(query, [email]);
       const user = row[0];
       
       if (!user) {
         throw new Error('User not found');
       }
+      return user;
+
     } catch (error) {
       throw error;
     }

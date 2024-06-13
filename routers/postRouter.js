@@ -10,7 +10,6 @@ const postRouter = express.Router();
 
 postRouter.use(cors());
 
-
 postRouter.route('').get(get_posts).post(upload.single('image'), create_post);
 
 

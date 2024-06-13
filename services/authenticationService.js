@@ -1,5 +1,6 @@
 import { CognitoIdentityProviderClient, SignUpCommand, ConfirmSignUpCommand, InitiateAuthCommand, GetUserCommand } from "@aws-sdk/client-cognito-identity-provider";
 import validator from "validator";
+import dbService from "./dbService.js";
 const client = new CognitoIdentityProviderClient({ region: process.env.AWS_REGION });
 
 export const signup_service = async (email, password) => {
@@ -16,7 +17,11 @@ export const signup_service = async (email, password) => {
       Password: password,
     }
     const command = new SignUpCommand(input);
-    const response = await client.send(command);    
+    const response = await client.send(command); 
+    
+    const query = 'INSERT INTO users (email, date) VALUES ($1, $2)';   
+    await dbService.instance.pool.query(query, [email, new Date()]);
+
     return response;    
   } catch (error) {
     throw(error);

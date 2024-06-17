@@ -53,6 +53,32 @@ export const get_zones_service = () => {
     return zones;
 }
 
+export const get_availability_service = () => { 
+    const availability = [
+        {
+            id: 1, 
+            name: 'Everyday'
+        },
+        {
+            id: 2, 
+            name: 'Weekends and holidays'
+        },
+        {
+            id: 3, 
+            name: 'Holidays only'
+        },
+        {
+            id: 4,
+            name: 'Weekends only'
+        },
+        {
+            id: 5,
+            name: 'Other'
+        }
+    ]
+    return availability;
+}
+
 export const register_to_newsletter_service = async (body) => {
     try {
         const { phone, cid, availability, charity_zone, full_name } = body;

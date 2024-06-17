@@ -1,4 +1,13 @@
-import { register_to_newsletter_service, delete_newsletter_registration_service, get_newsletter_service } from "../services/newsletterService.js";
+import { get_zones_service, register_to_newsletter_service, delete_newsletter_registration_service, get_newsletter_service } from "../services/newsletterService.js";
+
+export const get_zones = async (req, res) => {
+    try {
+        data = get_zones_service();
+        res.status(200).json({ success: true, message: 'Zones retreived successfuly!.', data: data});
+    } catch (error) {
+        res.status(200).json({ success: false, message: 'Failed to retrieve zones' });
+    }
+}
 
 export const register_to_newsletter = async (req, res) => {
     try {

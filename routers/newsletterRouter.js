@@ -7,9 +7,9 @@ newsletterRouter.use(cors());
 
 newsletterRouter.route('').get(get_newsletter).post(register_to_newsletter).delete(delete_newsletter_registration);
 
-newsletterRouter.route('zones').get(get_zones);
+newsletterRouter.route('/zones').get(get_zones);
 
-newsletterRouter.route('availability').get(get_availability);
+newsletterRouter.route('/availability').get(get_availability);
 
 
 export default newsletterRouter;

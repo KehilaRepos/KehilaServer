@@ -2,8 +2,8 @@ import { get_availability_service ,get_zones_service, register_to_newsletter_ser
 
 export const get_zones = async (req, res) => {
     try {
-        data = get_zones_service();
-        res.status(200).json({ success: true, message: 'Zones retreived successfuly!.', data: data});
+        const zones = get_zones_service();
+        res.status(200).json({ success: true, message: 'Zones retreived successfuly!.', data: zones});
     } catch (error) {
         res.status(200).json({ success: false, message: 'Failed to retrieve zones' });
     }
@@ -11,8 +11,8 @@ export const get_zones = async (req, res) => {
 
 export const get_availability = async (req, res) => {
     try {
-        data = get_availability_service();
-        res.status(200).json({ success: true, message: 'Availability retreived successfuly!.', data: data});
+        const availability = get_availability_service();
+        res.status(200).json({ success: true, message: 'Availability retreived successfuly!.', data: availability});
     } catch (error) {
         res.status(200).json({ success: false, message: 'Failed to retrieve availability' });
     }

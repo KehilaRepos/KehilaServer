@@ -19,8 +19,8 @@ export const signup_service = async (email, password) => {
     const command = new SignUpCommand(input);
     const response = await client.send(command); 
     
-    const query = 'INSERT INTO users (email, date) VALUES ($1, $2)';   
-    await dbService.instance.pool.query(query, [email, new Date()]);
+    const query = 'INSERT INTO users (email, creation_date) VALUES ($1, CURRENT_TIMESTAMP)';   
+    await dbService.instance.pool.query(query, [email]);
 
     return response;    
   } catch (error) {

@@ -1,6 +1,7 @@
 import dbService from "./dbService.js";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import fs from 'fs';
+import { unlink } from 'fs/promises';
 
 class Filter {
     constructor(column, processFunction = null) {
@@ -58,14 +59,15 @@ export const create_post_retreival_query = async (queryParams) => {
 	}
 };
 
-const upload_post_to_db = async (req) => {
+const upload_post_to_db = async (req, has_image) => {
 	try {
 		const data = {
-			email: req.body.email,
+			email: req.body.user_email,
 			cid: req.body.cid,
 			title: req.body.title,
 			description: req.body.description,
-			location: req.body.location,
+			latitude: req.body.latitude,
+			longitude: req.body.longitude,
 			expiration_time: req.body.expiration_time,
 			target: req.body.target,
 			contact_name: req.body.contact_name,
@@ -79,21 +81,18 @@ const upload_post_to_db = async (req) => {
 		if (!data.email || !data.cid || !data.title) {
 			throw new Error('Missing required fields');
 		}
-		const user = await dbService.instance.pool.query('SELECT * FROM users WHERE email = $1', [data.email]);
-		if (!user.rows.length) {
-			throw new Error('User not found');
-		}
-		const uid = user.rows[0].uid;
 		
 		for (let value in data) {
 			if (!data[value]) {
 				data[value] = null;
 			}
 		}
-		const query = `INSERT INTO posts (uid, cid, title, description, location, expiration_time, target, contact_name, contact_phone, contact_email, facebook, instagram, twitter, website) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)`;
-		const queryValues = [uid, data.cid, data.title, data.description, data.location, data.expiration_time, data.target, data.contact_name, data.contact_phone, data.contact_email, data.facebook, data.instagram, data.twitter, data.website];
+		const query = `INSERT INTO posts (user_email, cid, title, description, location, expiration_time, target, contact_name, contact_phone, contact_email, facebook, instagram, twitter, website, has_image, creation_time) VALUES ($1, $2, $3, $4, Point($5, $6), $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, CURRENT_TIMESTAMP) RETURNING pid`;
+		const queryValues = [data.email, data.cid, data.title, data.description, data.latitude, data.longitude, data.expiration_time, data.target, data.contact_name, data.contact_phone, data.contact_email, data.facebook, data.instagram, data.twitter, data.website, has_image];
 
-		await dbService.instance.pool.query(query, queryValues);
+		const queryResponse = await dbService.instance.pool.query(query, queryValues);
+
+		return queryResponse.rows[0].pid;
 	} catch (error) {
 		throw error;
 	}
@@ -105,31 +104,41 @@ export const upload_to_s3 = async (file, pid) => {
 			region: "us-east-1",
 			credentials: {
 				accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-				secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+				secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+				sessionToken: process.env.AWS_SESSION_TOKEN
 			}
 		});
 		const fileStream = fs.createReadStream(file.path);
 
 		const input = {
             Bucket: 'kehilaimagebucket',
-            Key: `${pid}.jpg`,
+            Key: `${pid}`,
             Body: fileStream
         };
 
 		const command = new PutObjectCommand(input);
 		await s3.send(command);
-
+		await unlink(file.path);
 	} catch (error) {
 		throw error;
 	}
 }
 
 export const create_post_service = async (req) => {
-	await upload_post_to_db(req);
+	try {
 
-	const pid = await dbService.instance.pool.query('SELECT pid FROM posts WHERE email = $1', [req.body.email]);
+		let has_image = false;	
+		if (req.file) {
+			has_image = true;
+		}
 
-	if (req.file) {
-		await upload_to_s3(req.file, pid);
+		const pid = await upload_post_to_db(req, has_image);
+
+		if (req.file) {
+			await upload_to_s3(req.file, pid);
+		}
+	} catch (error) {
+		console.log(error);
+		throw error;
 	}
 }

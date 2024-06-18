@@ -2,6 +2,7 @@ import express from 'express';
 import authentication_router from './routers/authenticationRouter.js';
 import post_router from './routers/postRouter.js';
 import category_router from './routers/categoryRouter.js';
+import newsletter_router from './routers/newsletterRouter.js';
 const app = express();
 
 //////////////////////////
@@ -19,5 +20,7 @@ app.use('/auth', authentication_router);
 app.use('/post', post_router);
 
 app.use('/categories', category_router);
+
+app.use('/newsletter', newsletter_router);
 
 export default app;

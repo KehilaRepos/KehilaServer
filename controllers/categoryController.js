@@ -5,7 +5,6 @@ export const get_categories = async (req, res) => {
         const categories = await get_categories_service(req.query);
         res.status(200).json({ success: true, message: 'Categories retrieved successfully.', data: categories });
     } catch (error) {
-        console.log(error);
         res.status(200).json({ success: false, message: 'Failed to retrieve categories' });
     }
 }

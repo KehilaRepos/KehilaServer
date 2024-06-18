@@ -81,6 +81,9 @@ export const get_availability_service = () => {
 
 export const register_to_newsletter_service = async (body) => {
     try {
+
+        // todo - validate phone number using validator library
+        
         const { phone, cid, availability, charity_zone, full_name } = body;
         if (!phone || !cid || !availability || !charity_zone || !full_name) {
             throw new Error('Missing required fields');

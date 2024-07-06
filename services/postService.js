@@ -68,7 +68,7 @@ export const create_post_retreival_query = async (queryParams) => {
 			if (filter && value) {
 				const processedValue = filter.apply(value);
 				if (filter.column === 'day') { // Special case for day filter
-					whereClauses.push(`expiration_time < $${values.length + 1}`);
+					whereClauses.push(`expiration_time < $${values.length + 1} AND expiration_time > CURRENT_TIMESTAMP`);
 				}
 				else {
 					whereClauses.push(`${filter.column} = $${values.length + 1}`);

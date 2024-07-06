@@ -114,9 +114,11 @@ export const delete_newsletter_registration_service = async (body) => {
     }
 }
 
-export const get_newsletter_service = async (query) => {
+export const get_newsletter_service = async (queryParams) => {
     try {
-        const { phone, cid } = query;
+        //const { phone, cid } = query;
+        const phone = queryParams.phone;
+        const cid = queryParams.cid;
         let queryValues = [];
         let query = `SELECT * FROM newsletter`;
         if (phone && cid) {

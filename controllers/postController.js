@@ -4,9 +4,9 @@ import dbService from "../services/dbService.js";
 
 export const get_posts = async (req, res) => {
     try {
-        const [query, values] = await create_post_retreival_query(req.query)
-        const posts = await dbService.instance.execute_dynamic_query(query, values);
-        res.status(200).json({ success: true, message: 'Posts retrieved successfully.', data: posts });
+        const posts = await create_post_retreival_query(req.query)
+        //const posts = await dbService.instance.execute_dynamic_query(query, values);
+        res.status(200).json({ success: true, message: 'Posts retrieved successfully.', data: posts, query: req.query});
     }
     catch (error) {
         console.log(error);

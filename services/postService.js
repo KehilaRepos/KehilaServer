@@ -19,8 +19,12 @@ const filters = {
     pid: new Filter('pid', value => value * 1),
     uid: new Filter('uid'),
     cid: new Filter('cid'),
+	day: new Filter('day', value => {
+		let date = new Date();
+		date.setDate(date.getDate() + parseInt(value));
+		return date;
+	}),
     //location: new Filter('location'),
-    expiration_time: new Filter('expiration_time'),
 };
 
 export const create_post_retreival_query = async (queryParams) => {
@@ -28,36 +32,68 @@ export const create_post_retreival_query = async (queryParams) => {
 		let baseQuery = `SELECT * FROM posts`;
 		const whereClauses = [];
 		const values = [];
-		if (queryParams.lat && queryParams.lng) {
-			baseQuery = `SELECT *, ST_Distance(
-			ST_SetSRID(location::geometry, 4326),
-			ST_SetSRID(ST_MakePoint($1, $2), 4326)
-			) AS distance
-			FROM posts;
-			`;
+		let orderBy = 'expiration_time';
+		if (queryParams.lat && queryParams.lng && queryParams.radius) {
+			// baseQuery = `
+			// 	SELECT * FROM (
+			// 		SELECT *, ST_Distance(
+			// 			ST_SetSRID(location::geometry, 4326),
+			// 			ST_SetSRID(ST_MakePoint($1, $2), 4326)
+			// 		) AS distance
+			// 		FROM posts
+			// 	) AS subquery
+			// 	WHERE distance < $3
+			// `;
+			let radius = queryParams.radius * 1000;
+			baseQuery = `
+				SELECT * FROM (
+					SELECT *, ST_Distance(
+						ST_SetSRID(ST_MakePoint(location[0], location[1]), 4326)::geography,
+						ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography
+					) AS distance
+					FROM posts
+				) AS subquery
+			`
+			
 			values.push(queryParams.lat);
 			values.push(queryParams.lng);
+			whereClauses.push(`distance < $${values.length + 1}`);
+			values.push(radius);
+			orderBy = 'distance';
+			//orderBy = 'distance';
 		}
 
 		Object.entries(queryParams).forEach(([key, value]) => {
 			const filter = filters[key];
 			if (filter && value) {
-			const processedValue = filter.apply(value);
-			whereClauses.push(`${filter.column} = $${values.length + 1}`);
-			//whereClauses.push(`${filter.column} = $${whereClauses.length + 1}`);
-			values.push(processedValue);
+				const processedValue = filter.apply(value);
+				if (filter.column === 'day') { // Special case for day filter
+					whereClauses.push(`expiration_time < $${values.length + 1}`);
+				}
+				else {
+					whereClauses.push(`${filter.column} = $${values.length + 1}`);
+				}
+				//whereClauses.push(`${filter.column} = $${whereClauses.length + 1}`);
+				values.push(processedValue);
 			}
 		});
 
-		let orderBy = 'expiration_time';
-		const query = whereClauses.length ? `${baseQuery} WHERE ${whereClauses.join(' AND ')} ORDER BY ${orderBy}` : baseQuery;
-		
-		return [query, values];
+		let query = whereClauses.length ? `${baseQuery} WHERE ${whereClauses.join(' AND ')}` : baseQuery;
+		query += ` ORDER BY ${orderBy}`;
+		let response = await dbService.instance.pool.query(query, values);
+		response = response.rows;
+		if (queryParams.lat && queryParams.lng && queryParams.radius) {
+			for (let post of response) {
+				post.distance = post.distance / 1000;
+			}
+		}
+		return response;
 
 	} catch (error) {
 		throw(error);
 	}
 };
+
 
 const upload_post_to_db = async (req, has_image) => {
 	try {

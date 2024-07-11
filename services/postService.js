@@ -1,7 +1,16 @@
 import dbService from "./dbService.js";
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand, DeleteObjectCommand  } from "@aws-sdk/client-s3";
 import fs from 'fs';
 import { unlink } from 'fs/promises';
+
+const s3 = new S3Client({ // Create a new S3 client
+	region: "us-east-1",
+	credentials: {
+		accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+		secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+		sessionToken: process.env.AWS_SESSION_TOKEN
+	}
+});
 
 class Filter {
     constructor(column, processFunction = null) {
@@ -60,7 +69,6 @@ export const create_post_retreival_query = async (queryParams) => {
 			whereClauses.push(`distance < $${values.length + 1}`);
 			values.push(radius);
 			orderBy = 'distance';
-			//orderBy = 'distance';
 		}
 
 		Object.entries(queryParams).forEach(([key, value]) => {
@@ -136,18 +144,10 @@ const upload_post_to_db = async (req, has_image) => {
 	}
 }
 
-export const upload_to_s3 = async (file, pid) => {
+const upload_to_s3 = async (file, pid) => {
 	try {
-		const s3 = new S3Client({
-			region: "us-east-1",
-			credentials: {
-				accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-				secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-				sessionToken: process.env.AWS_SESSION_TOKEN
-			}
-		});
+		
 		const fileStream = fs.createReadStream(file.path);
-
 		const input = {
             Bucket: 'kehilaimagebucket',
             Key: `${pid}`,
@@ -162,7 +162,9 @@ export const upload_to_s3 = async (file, pid) => {
 	}
 }
 
+
 export const create_post_service = async (req) => {
+
 	try {
 
 		let has_image = false;	
@@ -179,4 +181,86 @@ export const create_post_service = async (req) => {
 		console.log(error);
 		throw error;
 	}
+}
+
+const delete_from_s3 = async (pid) => {
+	try {
+		const input = {
+            Bucket: 'kehilaimagebucket',
+            Key: `${pid}`
+        };
+		const command = new DeleteObjectCommand(input);
+		await s3.send(command);
+	} catch (error) {
+		throw error;
+	}
+}
+
+export const delete_post_service = async (pid) => {
+	try {
+		const query = `DELETE FROM posts WHERE pid = $1 RETURNING has_image`;
+		const query_values = [pid];
+		const response = await dbService.instance.pool.query(query, query_values);
+		if (response.rowCount === 0) {
+			throw new Error('Post not found');
+		}
+		const has_image = response.rows[0].has_image;
+		if (has_image) {
+			await delete_from_s3(pid);
+		}
+	} catch (error) {
+		throw error;
+	}
+}
+
+export const patch_post_service = async (req) => {
+	try {
+		const pid = req.body.pid;
+		const data = {
+			cid: req.body.cid,
+			title: req.body.title,
+			description: req.body.description,
+			location: req.body.location,
+			expiration_time: req.body.expiration_time,
+			target: req.body.target,
+			contact_name: req.body.contact_name,
+			contact_phone: req.body.contact_phone,
+			contact_email: req.body.contact_email,
+			facebook: req.body.facebook,
+			instagram: req.body.instagram,
+			twitter: req.body.twitter,
+			website: req.body.website
+		};
+		
+		let base_query = `UPDATE posts SET`;
+		let set_clauses = [];
+		let values = [];
+		for (let key in data) {
+			if (data[key]) {
+				if (key === 'location') {
+					set_clauses.push(`location = Point($${values.length + 1}, $${values.length + 2})`);
+					values.push(data[key].lat);
+					values.push(data[key].lng);
+				}
+				else {
+					set_clauses.push(`${key} = $${values.length + 1}`);
+					values.push(data[key]);
+				}
+			}
+		}
+		if (values.length === 0) {
+			throw new Error('No values provided to update');
+		}
+		if (!pid) { 
+			throw new Error('No post id provided');
+		}
+
+		const query = `${base_query} ${set_clauses.join(', ')} WHERE pid = $${values.length + 1}`;
+		values.push(req.body.pid);
+		await dbService.instance.pool.query(query, values);
+	}
+	catch (error) {
+		throw error;
+	}
+
 }

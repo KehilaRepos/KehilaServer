@@ -147,7 +147,7 @@ const upload_to_s3 = async (file, pid) => {
 		
 		const fileStream = fs.createReadStream(file.path);
 		const input = {
-            Bucket: 'kehilaimagebucket',
+            Bucket: 'kehilabucket',
             Key: `${pid}`,
             Body: fileStream
         };
@@ -156,6 +156,7 @@ const upload_to_s3 = async (file, pid) => {
 		await s3.send(command);
 		await unlink(file.path);
 	} catch (error) {
+		console.log(error);
 		throw error;
 	}
 }
@@ -198,7 +199,9 @@ export const delete_post_service = async (pid) => {
 	try {
 		const query = `DELETE FROM posts WHERE pid = $1 RETURNING has_image`;
 		const query_values = [pid];
+		console.log(query_values);
 		const response = await dbService.instance.pool.query(query, query_values);
+		
 		if (response.rowCount === 0) {
 			throw new Error('Post not found');
 		}
@@ -207,6 +210,7 @@ export const delete_post_service = async (pid) => {
 			await delete_from_s3(pid);
 		}
 	} catch (error) {
+		console.log(error);
 		throw error;
 	}
 }

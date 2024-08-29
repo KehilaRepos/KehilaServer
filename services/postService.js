@@ -27,7 +27,7 @@ const filters = {
     //title: new Filter('title', value => value.trim()), exapmle
     pid: new Filter('pid', value => value * 1),
     uid: new Filter('uid'),
-    cid: new Filter('cid'),
+    cid: new Filter('cid', value => value == 0 ? null : value),		
 	day: new Filter('day', value => {
 		let date = new Date();
 		date.setDate(date.getDate() + parseInt(value));
@@ -73,7 +73,7 @@ export const create_post_retreival_query = async (queryParams) => {
 
 		Object.entries(queryParams).forEach(([key, value]) => {
 			const filter = filters[key];
-			if (filter && value) {
+			if (filter && value && filter.apply(value)) {
 				const processedValue = filter.apply(value);
 				if (filter.column === 'day') { // Special case for day filter
 					whereClauses.push(`expiration_time < $${values.length + 1} AND expiration_time > CURRENT_TIMESTAMP`);

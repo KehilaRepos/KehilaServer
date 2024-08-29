@@ -78,6 +78,9 @@ export const create_post_retreival_query = async (queryParams) => {
 				if (filter.column === 'day') { // Special case for day filter
 					whereClauses.push(`expiration_time < $${values.length + 1} AND expiration_time > CURRENT_TIMESTAMP`);
 				}
+				else if (filter.column === 'cid') { // Special case for category filter to check parent cid
+					whereClauses.push(`cid = $${values.length + 1} OR cid in (select cid from categories where parent_cid = $${values.length + 1})`);
+				}
 				else {
 					whereClauses.push(`${filter.column} = $${values.length + 1}`);
 				}

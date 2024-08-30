@@ -42,7 +42,9 @@ export const create_post_retreival_query = async (queryParams) => {
 		const whereClauses = [];
 		const values = [];
 		let orderBy = 'expiration_time';
-		if (queryParams.lat && queryParams.lng && queryParams.radius) {
+		const lat = queryParams.lat * 1;
+		const lng = queryParams.lng * 1;
+		if (queryParams.lat && queryParams.lng && queryParams.radius && lat > 0 && lng > 0) {
 			// baseQuery = `
 			// 	SELECT * FROM (
 			// 		SELECT *, ST_Distance(
@@ -63,7 +65,6 @@ export const create_post_retreival_query = async (queryParams) => {
 					FROM posts
 				) AS subquery
 			`
-			
 			values.push(queryParams.lat);
 			values.push(queryParams.lng);
 			whereClauses.push(`distance < $${values.length + 1}`);
@@ -79,7 +80,7 @@ export const create_post_retreival_query = async (queryParams) => {
 					whereClauses.push(`expiration_time < $${values.length + 1} AND expiration_time > CURRENT_TIMESTAMP`);
 				}
 				else if (filter.column === 'cid') { // Special case for category filter to check parent cid
-					whereClauses.push(`cid = $${values.length + 1} OR cid in (select cid from categories where parent_cid = $${values.length + 1})`);
+					whereClauses.push(`(cid = $${values.length + 1} OR cid in (select cid from categories where parent_cid = $${values.length + 1}))`);
 				}
 				else {
 					whereClauses.push(`${filter.column} = $${values.length + 1}`);

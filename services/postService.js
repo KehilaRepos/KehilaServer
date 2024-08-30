@@ -77,7 +77,7 @@ export const create_post_retreival_query = async (queryParams) => {
 			if (filter && value && filter.apply(value)) {
 				const processedValue = filter.apply(value);
 				if (filter.column === 'day') { // Special case for day filter
-					whereClauses.push(`expiration_time < $${values.length + 1} AND expiration_time > CURRENT_TIMESTAMP`);
+					whereClauses.push(`expiration_time < $${values.length + 1}`);
 				}
 				else if (filter.column === 'cid') { // Special case for category filter to check parent cid
 					whereClauses.push(`(cid = $${values.length + 1} OR cid in (select cid from categories where parent_cid = $${values.length + 1}))`);
@@ -90,7 +90,14 @@ export const create_post_retreival_query = async (queryParams) => {
 			}
 		});
 
+
+
+		if (queryParams.orderby) { 
+			orderBy = queryParams.orderby;
+		}
 		let query = whereClauses.length ? `${baseQuery} WHERE ${whereClauses.join(' AND ')}` : baseQuery;
+		let additionalExpirationTimeQuery = whereClauses.length ? ` AND expiration_time > CURRENT_TIMESTAMP`: ` WHERE expiration_time > CURRENT_TIMESTAMP`;
+		query += additionalExpirationTimeQuery;
 		query += ` ORDER BY ${orderBy}`;
 		let response = await dbService.instance.pool.query(query, values);
 		response = response.rows;

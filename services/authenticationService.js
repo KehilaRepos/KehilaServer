@@ -1,4 +1,4 @@
-import { CognitoIdentityProviderClient, SignUpCommand, ConfirmSignUpCommand, InitiateAuthCommand, GetUserCommand } from "@aws-sdk/client-cognito-identity-provider";
+import { CognitoIdentityProviderClient, SignUpCommand, ConfirmSignUpCommand, InitiateAuthCommand, ResendConfirmationCodeCommand } from "@aws-sdk/client-cognito-identity-provider";
 import validator from "validator";
 import dbService from "./dbService.js";
 const client = new CognitoIdentityProviderClient({ region: process.env.AWS_REGION });

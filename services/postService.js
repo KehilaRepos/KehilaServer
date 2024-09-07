@@ -275,5 +275,19 @@ export const patch_post_service = async (req) => {
 	catch (error) {
 		throw error;
 	}
+}
+
+export const update_views_post_service = async (req) => {
+	try {
+		const pid = req.body.pid;
+		if (!pid) {
+			throw new Error('No post id provided');
+		}
+		const query = `UPDATE posts SET views = views + 1 WHERE pid = $1`;
+		const query_values = [pid];
+		await dbService.instance.pool.query(query, query_values);
+	} catch (error) {
+		throw error;
+	}
 
 }

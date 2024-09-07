@@ -32,3 +32,19 @@ export const get_notification_service = async (query_params) => {
     return response.rows;
 }
 
+export const is_read_set_true_notification_service = async (body) => {
+    try {
+        const nid = body.nid;
+        if(!nid) {
+            throw new Error('Missing required fields');
+        }
+        const query = `UPDATE notifications SET is_read = true WHERE nid = $1`;
+
+        const values = [nid];
+        await dbService.instance.pool.query(query, values);
+    } 
+    catch (error) {
+        throw error;
+    }
+}
+

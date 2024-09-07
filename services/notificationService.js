@@ -1,19 +1,12 @@
 import dbService from "./dbService.js";
 
-export const create_notification_service = async (body) => {
-    try {
-        const data = {
-            user_email: body.user_email,
-            type: body.type,
-            pid: body.pid
-        };
-        for (const key in data) {
-            if (data[key] === undefined) {
-                throw new Error(`Missing ${key} in request body`);
-            }
+export const create_notification_service = async (user_email, type, pid) => {
+    try {     
+        if(!user_email || !type || !pid) {
+            throw new Error('Missing required fields');
         }
         const query = `INSERT INTO notifications (user_email, type, pid, creation_time) VALUES ($1, $2, $3, CURRENT_TIMESTAMP)`;
-        const values = [data.user_email, data.type, data.pid];
+        const values = [user_email, type, pid];
         await dbService.instance.pool.query(query, values);
     }
     catch (error) {

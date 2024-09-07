@@ -44,7 +44,6 @@ export const patch_post = async (req, res) => {
 
 export const update_views_post = async (req, res) => {
     try {
-        console.log(req.body);
         await update_views_post_service(req);
         res.status(200).json({ success: true, message: 'Post views updated successfully!.'});
     }

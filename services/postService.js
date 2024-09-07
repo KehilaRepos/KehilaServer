@@ -1,4 +1,5 @@
 import dbService from "./dbService.js";
+import { create_notification_service } from "./notificationService.js";
 import { S3Client, PutObjectCommand, DeleteObjectCommand  } from "@aws-sdk/client-s3";
 import fs from 'fs';
 import { unlink } from 'fs/promises';
@@ -283,9 +284,15 @@ export const update_views_post_service = async (req) => {
 		if (!pid) {
 			throw new Error('No post id provided');
 		}
-		const query = `UPDATE posts SET views = views + 1 WHERE pid = $1`;
+		const query = `UPDATE posts SET views = views + 1 WHERE pid = $1 returning user_email`;
 		const query_values = [pid];
-		await dbService.instance.pool.query(query, query_values);
+		const response = await dbService.instance.pool.query(query, query_values);
+		if (response.rowCount === 0) {
+			throw new Error('Post not found');
+		}
+		const user_email = response.rows[0].user_email;
+		await create_notification_service(user_email, 1, pid);
+
 	} catch (error) {
 		throw error;
 	}

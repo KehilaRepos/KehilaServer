@@ -48,3 +48,19 @@ export const is_read_set_true_notification_service = async (body) => {
     }
 }
 
+export const is_read_set_true_for_user_notification_service = async (body) => {
+    try {
+        const user_email = body.user_email;
+        if(!user_email) {
+            throw new Error('Missing required fields');
+        }
+        const query = `UPDATE notifications SET is_read = true WHERE user_email = $1`;
+
+        const values = [user_email];
+        await dbService.instance.pool.query(query, values);
+    } 
+    catch (error) {
+        throw error;
+    }
+}
+

@@ -17,7 +17,9 @@ export default class dbService {
       database: process.env.POSTGRES_DATABASE,
       password: process.env.POSTGRES_PASS,
       port: process.env.POSTGRES_PORT * 1,
-    
+      ssl: {
+        rejectUnauthorized: false
+      }
     });
 
     dbService.instance = this;

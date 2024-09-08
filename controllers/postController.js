@@ -1,4 +1,4 @@
-import { create_post_retreival_query, create_post_service } from "../services/postService.js";
+import { create_post_retreival_query, create_post_service, delete_post_service, patch_post_service, update_views_post_service } from "../services/postService.js";
 import dbService from "../services/dbService.js";
 
 
@@ -24,3 +24,30 @@ export const create_post = async (req, res) => {
     }
 }
 
+export const delete_post = async (req, res) => {
+    try {
+        await delete_post_service(req.body.pid);
+        res.status(200).json({ success: true, message: 'Post deleted successfully!.'});
+    } catch (error) {
+        res.status(200).json({ success: false, message: 'Failed to delete post' });
+    }
+}
+
+export const patch_post = async (req, res) => {
+    try {
+        await patch_post_service(req);
+        res.status(200).json({ success: true, message: 'Post updated successfully!.'});
+    } catch (error) {
+        res.status(200).json({ success: false, message: 'Failed to update post' });
+    }
+}
+
+export const update_views_post = async (req, res) => {
+    try {
+        await update_views_post_service(req);
+        res.status(200).json({ success: true, message: 'Post views updated successfully!.'});
+    }
+    catch (error) { 
+        res.status(200).json({ success: false, message: 'Failed to update post views' });
+    }
+}    

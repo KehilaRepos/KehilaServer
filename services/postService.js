@@ -298,3 +298,22 @@ export const update_views_post_service = async (req) => {
 	}
 
 }
+
+export const update_likes_post_service = async (req) => {
+	try {
+		const pid = req.body.pid;
+		if (!pid) {
+			throw new Error('No post id provided');
+		}
+		const query = `UPDATE posts SET likes = likes + 1 WHERE pid = $1 returning user_email`;
+		const query_values = [pid];
+		const response = await dbService.instance.pool.query(query, query_values);
+		if (response.rowCount === 0) {
+			throw new Error('Post not found');
+		}
+		const user_email = response.rows[0].user_email;
+		await create_notification_service(user_email, 2, pid);
+	} catch (error) {
+		throw error;
+	}
+}
